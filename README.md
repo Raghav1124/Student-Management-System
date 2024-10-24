@@ -145,7 +145,3 @@ The following are example SQL queries that can be run against the database to re
 
 - SQL database environment (PostgreSQL, MySQL, etc.)
 - Basic knowledge of SQL for executing commands and queries.
-
-## License
-
-This project is open-source and available under the MIT License.
