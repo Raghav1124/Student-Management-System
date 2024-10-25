@@ -139,8 +139,6 @@ The following are example SQL queries that can be run against the database to re
 3. **Get All Subjects with Their Corresponding Teachers**
 4. **Get All Students with Their Class and Subject Details**
 
-(Refer to the SQL code for detailed example queries.)
-
 ## Requirements
 
 - SQL database environment (PostgreSQL, MySQL, etc.)
