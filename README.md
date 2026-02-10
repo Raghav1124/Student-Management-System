@@ -323,12 +323,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [SQLite](https://www.sqlite.org/) - Database engine
 - [Bootstrap Icons](https://icons.getbootstrap.com/) - Icon library
 
-## 📞 Support
-
-For support, please:
-1. Check the [Troubleshooting](#troubleshooting) section
-2. Search existing [Issues](https://github.com/yourusername/student-management-system/issues)
-3. Create a new issue with detailed information
 
 ## 🚀 Quick Start Commands
 
@@ -352,14 +346,7 @@ Made with ❤️ using Flask & Bootstrap
 
 </div>
 
-## 📊 Screenshots
 
-*(Add your screenshots here)*
-- Login Page
-- Dashboard
-- Students List
-- Timetable
-- Teacher's Class View
 
 ## 🔗 Useful Links
 
@@ -370,4 +357,3 @@ Made with ❤️ using Flask & Bootstrap
 
 ---
 
-**Note**: This is a demo project for educational purposes. For production use, please implement additional security measures like password hashing, CSRF protection, and input validation.
