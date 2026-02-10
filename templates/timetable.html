@@ -1,0 +1,396 @@
+{% extends "base.html" %} {% block title %}Timetable{% endblock %} {% block
+content %}
+<div class="container py-4 animate-in">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <div class="row align-items-center">
+            <div class="col-md-6">
+              <h1 class="h2 mb-0">
+                <i class="bi bi-calendar-week text-primary me-2"></i>Class
+                Timetable
+              </h1>
+              <p class="text-muted mb-0">View and manage class schedules</p>
+            </div>
+            <div class="col-md-6">
+              <div class="d-flex gap-2 justify-content-md-end">
+                <div class="input-group" style="max-width: 300px">
+                  <label class="input-group-text bg-white" for="classDropdown">
+                    <i class="bi bi-house-door"></i>
+                  </label>
+                  <select id="classDropdown" class="form-select">
+                    <option value="">Select a class...</option>
+                  </select>
+                </div>
+                <button class="btn btn-outline-secondary print-btn">
+                  <i class="bi bi-printer me-2"></i>Print
+                </button>
+                <button class="btn btn-primary" id="refreshTimetable">
+                  <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timetable -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white border-0 py-3">
+          <h5 class="mb-0">
+            <i class="bi bi-calendar3 me-2"></i>
+            Weekly Schedule
+            <span id="selectedClass" class="badge bg-primary ms-2"></span>
+          </h5>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-bordered mb-0" id="timetableTable">
+              <thead class="table-dark">
+                <tr>
+                  <th class="text-center" style="width: 120px">Day / Period</th>
+                  <th class="text-center">
+                    Period 1<br /><small>9:00 - 10:00</small>
+                  </th>
+                  <th class="text-center">
+                    Period 2<br /><small>10:00 - 11:00</small>
+                  </th>
+                  <th class="text-center">
+                    Period 3<br /><small>11:15 - 12:15</small>
+                  </th>
+                  <th class="text-center">
+                    Period 4<br /><small>12:15 - 1:15</small>
+                  </th>
+                  <th class="text-center">
+                    Period 5<br /><small>2:00 - 3:00</small>
+                  </th>
+                  <th class="text-center">
+                    Period 6<br /><small>3:00 - 4:00</small>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr id="loadingRow">
+                  <td colspan="7" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Loading timetable...</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card-footer bg-white border-0 py-3">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="legend">
+                <h6 class="mb-2">
+                  <i class="bi bi-tags me-2"></i>Subject Legend
+                </h6>
+                <div class="d-flex flex-wrap gap-2">
+                  <span class="badge bg-primary">Math</span>
+                  <span class="badge bg-success">Science</span>
+                  <span class="badge bg-info">English</span>
+                  <span class="badge bg-warning">History</span>
+                  <span class="badge bg-danger">Physics</span>
+                  <span class="badge bg-secondary">Chemistry</span>
+                  <span class="badge bg-dark">Biology</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 text-md-end">
+              <small class="text-muted">
+                <i class="bi bi-info-circle me-1"></i>
+                Click on any subject to view details
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Period Details Modal -->
+<div class="modal fade" id="periodModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-calendar-event me-2"></i>
+          <span id="periodTitle">Period Details</span>
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body" id="periodContent">
+        <!-- Period details will be loaded here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  // Get today's day
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const today = new Date().getDay();
+  const todayName = days[today];
+
+  // Load classes on page load
+  document.addEventListener('DOMContentLoaded', function() {
+      loadClasses();
+
+      // Set default class if provided
+      {% if default_class_id %}
+      setTimeout(() => {
+          const dropdown = document.getElementById('classDropdown');
+          if (dropdown) {
+              dropdown.value = {{ default_class_id }};
+              loadTimetable({{ default_class_id }});
+          }
+      }, 500);
+      {% endif %}
+
+      // Refresh button
+      document.getElementById('refreshTimetable')?.addEventListener('click', function() {
+          const classId = document.getElementById('classDropdown').value;
+          if (classId) {
+              loadTimetable(classId);
+              StudentManagementSystem.showNotification('Timetable refreshed', 'success');
+          }
+      });
+
+      // Print button
+      document.querySelector('.print-btn')?.addEventListener('click', function() {
+          window.print();
+      });
+  });
+
+  // Load classes into dropdown
+  async function loadClasses() {
+      try {
+          const response = await fetch("/api/classes");
+          const data = await response.json();
+
+          const dropdown = document.getElementById("classDropdown");
+          dropdown.innerHTML = '<option value="">Select a class...</option>';
+
+          data.forEach(cls => {
+              const option = document.createElement("option");
+              option.value = cls.id;
+              option.textContent = cls.name;
+              dropdown.appendChild(option);
+          });
+
+          // Auto-select if only one class
+          if (data.length === 1) {
+              dropdown.value = data[0].id;
+              loadTimetable(data[0].id);
+          }
+      } catch (error) {
+          console.error('Error loading classes:', error);
+          StudentManagementSystem.showNotification('Failed to load classes', 'danger');
+      }
+  }
+
+  // Load timetable for selected class
+  async function loadTimetable(class_id) {
+      const tbody = document.querySelector("#timetableTable tbody");
+      const loadingRow = document.getElementById('loadingRow');
+
+      // Show loading
+      loadingRow.style.display = '';
+      tbody.innerHTML = '';
+      tbody.appendChild(loadingRow);
+
+      try {
+          const response = await fetch("/api/timetable/" + class_id);
+          const data = await response.json();
+
+          tbody.innerHTML = '';
+
+          if (data.length === 0) {
+              tbody.innerHTML = `
+                  <tr>
+                      <td colspan="7" class="text-center py-5">
+                          <div class="text-muted">
+                              <i class="bi bi-calendar-x display-6 d-block mb-3"></i>
+                              <h5>No timetable found</h5>
+                              <p>Timetable not available for this class</p>
+                          </div>
+                      </td>
+                  </tr>
+              `;
+              return;
+          }
+
+          // Update selected class badge
+          const selectedClass = document.getElementById('selectedClass');
+          const selectedOption = document.querySelector(`#classDropdown option[value="${class_id}"]`);
+          if (selectedClass && selectedOption) {
+              selectedClass.textContent = selectedOption.textContent;
+          }
+
+          data.forEach((row, rowIndex) => {
+              const tr = document.createElement("tr");
+              tr.className = row.day === todayName ? 'table-primary' : '';
+              tr.style.animationDelay = `${rowIndex * 0.1}s`;
+              tr.classList.add('slide-in-left');
+
+              // Day cell
+              const th = document.createElement("th");
+              th.className = "text-center align-middle";
+              th.innerHTML = `
+                  <strong>${row.day}</strong>
+                  ${row.day === todayName ? '<br><small class="badge bg-success">Today</small>' : ''}
+              `;
+              tr.appendChild(th);
+
+              // Period cells
+              row.periods.forEach((subject, periodIndex) => {
+                  const td = document.createElement("td");
+                  td.className = "text-center align-middle";
+                  td.style.cursor = "pointer";
+                  td.style.minHeight = "80px";
+
+                  if (subject && subject.trim() !== '') {
+                      // Assign colors based on subject
+                      const colors = {
+                          'Mathematics': 'primary',
+                          'Math': 'primary',
+                          'English': 'info',
+                          'Science': 'success',
+                          'History': 'warning',
+                          'Geography': 'secondary',
+                          'Physics': 'danger',
+                          'Chemistry': 'dark',
+                          'Biology': 'success',
+                          'Physical Education': 'info',
+                          'Art': 'warning',
+                          'Music': 'danger',
+                          'Computer Science': 'secondary',
+                          'Library': 'dark',
+                          'English Literature': 'info'
+                      };
+
+                      const color = colors[subject] || 'primary';
+                      td.innerHTML = `
+                          <div class="timetable-cell p-2">
+                              <span class="badge bg-${color} w-100 py-2">
+                                  ${subject}
+                              </span>
+                              <small class="text-muted d-block mt-2">Period ${periodIndex + 1}</small>
+                          </div>
+                      `;
+
+                      // Add click event
+                      td.addEventListener('click', () => {
+                          showPeriodDetails(row.day, periodIndex + 1, subject);
+                      });
+                  } else {
+                      td.innerHTML = `
+                          <div class="timetable-cell p-2">
+                              <span class="text-muted">Free</span>
+                              <small class="text-muted d-block mt-2">Period ${periodIndex + 1}</small>
+                          </div>
+                      `;
+                  }
+
+                  tr.appendChild(td);
+              });
+
+              tbody.appendChild(tr);
+          });
+      } catch (error) {
+          console.error('Error loading timetable:', error);
+          tbody.innerHTML = `
+              <tr>
+                  <td colspan="7" class="text-center py-5 text-danger">
+                      <i class="bi bi-exclamation-triangle display-6 d-block mb-3"></i>
+                      <h5>Failed to load timetable</h5>
+                      <p>Please try again later</p>
+                  </td>
+              </tr>
+          `;
+          StudentManagementSystem.showNotification('Failed to load timetable', 'danger');
+      }
+  }
+
+  // Show period details modal
+  function showPeriodDetails(day, period, subject) {
+      const periodTimes = [
+          '9:00 - 10:00',
+          '10:00 - 11:00',
+          '11:15 - 12:15',
+          '12:15 - 13:15',
+          '14:00 - 15:00',
+          '15:00 - 16:00'
+      ];
+
+      const time = periodTimes[period - 1] || '';
+
+      document.getElementById('periodTitle').textContent = `Period ${period} - ${day}`;
+
+      const content = `
+          <div class="text-center mb-4">
+              <div class="display-6 mb-2">${subject}</div>
+              <p class="text-muted">${time}</p>
+          </div>
+          <div class="mb-3">
+              <label class="form-label"><i class="bi bi-person-badge me-2"></i>Teacher:</label>
+              <input type="text" class="form-control" value="Assigned Teacher" readonly>
+          </div>
+          <div class="mb-3">
+              <label class="form-label"><i class="bi bi-door-closed me-2"></i>Room:</label>
+              <input type="text" class="form-control" value="Room ${Math.floor(Math.random() * 100) + 100}" readonly>
+          </div>
+          <div class="mb-3">
+              <label class="form-label"><i class="bi bi-journal-text me-2"></i>Notes:</label>
+              <textarea class="form-control" rows="3" readonly>Regular class session. Please bring required textbooks and materials.</textarea>
+          </div>
+      `;
+
+      document.getElementById('periodContent').innerHTML = content;
+      const modal = new bootstrap.Modal(document.getElementById('periodModal'));
+      modal.show();
+  }
+
+  // Event listener for class dropdown
+  document.getElementById("classDropdown")?.addEventListener("change", function() {
+      if (this.value) {
+          loadTimetable(this.value);
+      } else {
+          const tbody = document.querySelector("#timetableTable tbody");
+          if (tbody) {
+              tbody.innerHTML = `
+                  <tr>
+                      <td colspan="7" class="text-center py-5 text-muted">
+                          <i class="bi bi-calendar display-6 d-block mb-3"></i>
+                          <h5>Select a class</h5>
+                          <p>Please select a class to view the timetable</p>
+                      </td>
+                  </tr>
+              `;
+          }
+          const selectedClass = document.getElementById('selectedClass');
+          if (selectedClass) selectedClass.textContent = '';
+      }
+  });
+</script>
+{% endblock %}

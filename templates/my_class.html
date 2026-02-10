@@ -1,0 +1,275 @@
+{% extends "base.html" %} {% block title %}My Class{% endblock %} {% block
+content %}
+<div class="container py-4 animate-in">
+  <!-- Class Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm bg-gradient-primary text-white">
+        <div class="card-body py-5">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <h1 class="display-6 fw-bold mb-3">
+                <i class="bi bi-house-door-fill me-3"></i>{{ class_name }}
+              </h1>
+              <p class="lead mb-0">
+                <i class="bi bi-person-badge me-2"></i>Teacher: {{ session.user
+                }}
+                <span class="mx-3">|</span>
+                <i class="bi bi-book me-2"></i>Subject: {{ subject }}
+                <span class="mx-3">|</span>
+                <i class="bi bi-people me-2"></i>Students: {{ students|length }}
+              </p>
+            </div>
+            <div class="col-md-4 text-md-end">
+              <div class="bg-white bg-opacity-25 rounded p-3 d-inline-block">
+                <h2 class="mb-0">{{ students|length }}</h2>
+                <small>Total Students</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Students Grid -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white border-0 py-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+              <i class="bi bi-people-fill text-primary me-2"></i>Class Students
+            </h5>
+            <div class="d-flex gap-2">
+              <div class="input-group" style="max-width: 250px">
+                <input
+                  type="text"
+                  class="form-control search-students"
+                  placeholder="Search students..."
+                />
+                <button class="btn btn-outline-secondary" type="button">
+                  <i class="bi bi-search"></i>
+                </button>
+              </div>
+              <button class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Add Student
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          {% if students %}
+          <div class="row g-3 p-3">
+            {% for student in students %}
+            <div class="col-md-6 col-lg-4">
+              <div class="card hover-lift student-card">
+                <div class="card-body">
+                  <div class="d-flex align-items-start">
+                    <div class="flex-shrink-0">
+                      <div
+                        class="avatar bg-primary bg-opacity-10 rounded-circle p-3"
+                      >
+                        <i class="bi bi-person-circle fs-3 text-primary"></i>
+                      </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                      <h6 class="mb-1">{{ student[1] }}</h6>
+                      <p class="text-muted small mb-2">
+                        Student ID: #{{ student[0] }}
+                      </p>
+                      <div class="d-flex gap-2">
+                        <span class="badge bg-info">
+                          <i class="bi bi-house-door me-1"></i> {{ class_name }}
+                        </span>
+                        <span class="badge bg-success">
+                          <i class="bi bi-check-circle me-1"></i> Active
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-footer bg-white border-0 pt-0">
+                  <div class="d-flex justify-content-between">
+                    <button
+                      class="btn btn-sm btn-outline-primary view-profile"
+                      data-id="{{ student[0] }}"
+                    >
+                      <i class="bi bi-eye me-1"></i> View
+                    </button>
+                    <div class="dropdown">
+                      <button
+                        class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                        type="button"
+                        data-bs-toggle="dropdown"
+                      >
+                        <i class="bi bi-three-dots"></i>
+                      </button>
+                      <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                          <a class="dropdown-item" href="#">
+                            <i class="bi bi-pencil me-2"></i> Edit
+                          </a>
+                        </li>
+                        <li>
+                          <a class="dropdown-item" href="#">
+                            <i class="bi bi-chat-text me-2"></i> Message
+                          </a>
+                        </li>
+                        <li><hr class="dropdown-divider" /></li>
+                        <li>
+                          <a class="dropdown-item text-danger" href="#">
+                            <i class="bi bi-trash me-2"></i> Remove
+                          </a>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="text-center py-5">
+            <div class="text-muted mb-3">
+              <i class="bi bi-people display-1"></i>
+            </div>
+            <h5>No students in this class</h5>
+            <p class="text-muted">Add students to your class to get started</p>
+            <button class="btn btn-primary">
+              <i class="bi bi-plus-circle me-2"></i>Add First Student
+            </button>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="row">
+    <div class="col-md-3 mb-3">
+      <div class="card text-center hover-lift">
+        <div class="card-body">
+          <div class="text-primary mb-3">
+            <i class="bi bi-check-circle-fill fs-1"></i>
+          </div>
+          <h3 class="counter" data-target="95">0</h3>
+          <p class="text-muted mb-0">Attendance %</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card text-center hover-lift">
+        <div class="card-body">
+          <div class="text-success mb-3">
+            <i class="bi bi-award-fill fs-1"></i>
+          </div>
+          <h3 class="counter" data-target="87">0</h3>
+          <p class="text-muted mb-0">Average Grade</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card text-center hover-lift">
+        <div class="card-body">
+          <div class="text-warning mb-3">
+            <i class="bi bi-clock-fill fs-1"></i>
+          </div>
+          <h3 class="counter" data-target="5">0</h3>
+          <p class="text-muted mb-0">Pending Tasks</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card text-center hover-lift">
+        <div class="card-body">
+          <div class="text-info mb-3">
+            <i class="bi bi-chat-left-text-fill fs-1"></i>
+          </div>
+          <h3 class="counter" data-target="12">0</h3>
+          <p class="text-muted mb-0">Messages</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  // Student search
+  document
+    .querySelector(".search-students")
+    .addEventListener("input", function (e) {
+      const searchTerm = e.target.value.toLowerCase();
+      const cards = document.querySelectorAll(".student-card");
+
+      cards.forEach((card) => {
+        const studentName = card.querySelector("h6").textContent.toLowerCase();
+        if (studentName.includes(searchTerm)) {
+          card.style.display = "block";
+          card.classList.add("animate__animated", "animate__fadeIn");
+        } else {
+          card.style.display = "none";
+        }
+      });
+    });
+
+  // View profile buttons
+  document.querySelectorAll(".view-profile").forEach((button) => {
+    button.addEventListener("click", function () {
+      const studentId = this.getAttribute("data-id");
+      StudentManagementSystem.showNotification(
+        `Viewing profile for student #${studentId}`,
+        "info",
+      );
+    });
+  });
+
+  // Initialize counters
+  document.addEventListener("DOMContentLoaded", function () {
+    const counters = document.querySelectorAll(".counter");
+    counters.forEach((counter) => {
+      const target = parseInt(counter.getAttribute("data-target"));
+      let current = 0;
+      const increment = target / 50;
+
+      const updateCounter = () => {
+        if (current < target) {
+          current += increment;
+          counter.textContent = Math.ceil(current);
+          setTimeout(updateCounter, 20);
+        } else {
+          counter.textContent = target;
+        }
+      };
+
+      setTimeout(updateCounter, 1000);
+    });
+  });
+</script>
+
+<style>
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+  }
+
+  .student-card {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+  }
+
+  .student-card:hover {
+    border-color: #4361ee;
+    transform: translateY(-5px);
+  }
+
+  .avatar {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+</style>
+{% endblock %}
